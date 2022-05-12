@@ -1,6 +1,6 @@
 import socket
-# IP = socket.gethostbyname(socket.gethostname())
-IP = '10.88.204.26'
+IP = socket.gethostbyname(socket.gethostname())
+# IP = '10.88.204.26'
 PORT = 4455
 ADDR = (IP, PORT)
 SIZE = 1024

@@ -1,13 +1,16 @@
 import socket
+import time
+import os
  
-# IP = socket.gethostbyname(socket.gethostname())
-IP = '10.88.204.26'
+IP = socket.gethostbyname(socket.gethostname())
+# IP = '10.88.204.26'
 PORT = 4455
 ADDR = (IP, PORT)
 FORMAT = "utf-8"
 SIZE = 1024
  
 def main():
+    begin = time.perf_counter_ns()
     """ Staring a TCP socket. """
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
  
@@ -15,7 +18,7 @@ def main():
     client.connect(ADDR)
  
     """ Opening and reading the file data. """
-    file = open("TCP_File_Client.py", "r")
+    file = open("data.txt", "r")
     data = file.read()
  
     """ Sending the filename to the server. """
@@ -27,13 +30,18 @@ def main():
     client.send(data.encode(FORMAT))
     msg = client.recv(SIZE).decode(FORMAT)
     print(f"[SERVER]: {msg}")
+    file_size = os.path.getsize('data.txt')
+    print('File size:', file_size, 'bytes')
  
     """ Closing the file. """
     file.close()
  
     """ Closing the connection from the server. """
     client.close()
+    end = time.perf_counter_ns()
+    print('Execution time:', (end-begin), 'ns')
  
  
 if __name__ == "__main__":
-    main()
+    for i in range (0, 10):
+        main()
