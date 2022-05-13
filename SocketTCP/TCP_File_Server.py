@@ -21,16 +21,16 @@ def main():
         """ Receiving the filename from the client. """
         filename = conn.recv(SIZE).decode(FORMAT)
         print(f"[RECV] Receiving the filename.")
-        #file = open(filename, "w")
+        file = open(filename, "w")
         conn.send("Filename received.".encode(FORMAT))
         """ Receiving the file data from the client. """
         data = conn.recv(SIZE).decode(FORMAT)
         print(f"[RECV] Receiving the file data.")
         print(data)
-        #file.write(data)
+        file.write(data)
         conn.send("File data received".encode(FORMAT))
         """ Closing the file. """
-        #file.close()
+        file.close()
         """ Closing the connection from the client. """
         conn.close()
         print(f"[DISCONNECTED] {addr} disconnected.")

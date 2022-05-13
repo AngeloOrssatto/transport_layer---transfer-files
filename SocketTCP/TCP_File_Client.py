@@ -18,7 +18,7 @@ def main():
     client.connect(ADDR)
  
     """ Opening and reading the file data. """
-    file = open("data.txt", "r")
+    file = open("../data.txt", "r")
     data = file.read()
  
     """ Sending the filename to the server. """
@@ -27,10 +27,10 @@ def main():
     print(f"[SERVER]: {msg}")
  
     """ Sending the file data to the server. """
-    client.send(data.encode(FORMAT))
+    client.sendall(data.encode(FORMAT))
     msg = client.recv(SIZE).decode(FORMAT)
     print(f"[SERVER]: {msg}")
-    file_size = os.path.getsize('data.txt')
+    file_size = os.path.getsize('../data.txt')
     print('File size:', file_size, 'bytes')
  
     """ Closing the file. """
