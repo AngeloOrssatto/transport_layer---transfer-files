@@ -1,39 +1,45 @@
+from audioop import add
 import socket
-import time
+from tqdm import tqdm
 
-HOST = '10.88.204.26'
-PORT = 50000
-BUFFERSIZE = 1024
+# IP = socket.gethostbyname(socket.gethostname())
+IP = '192.168.202.4'
+PORT = 4455
+ADDR = (IP, PORT)
+SIZE = 1024
+FORMAT = 'utf-8'
 
-# cria socket UDP
-udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-udp_socket.bind((HOST, PORT))
+def main():
 
-# inicia escuta para conexoes
-# udp_socket.listen()
-print('Aguardando conexão')
+    # cria socket UDP
+    server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server.bind(ADDR)
+    server.settimeout(4.0)
+    print('[+] Waiting connection...')
 
-# conn, addr = udp_socket.accept()
-# print('Conectado em', addr)
+    data, addr = server.recvfrom(SIZE)
+    print(f"Recebi {data} de {addr}")
+    prev = data.decode(FORMAT)
+    item = prev.split("_")
+    FILENAME = item[0]
+    FILESIZE = int(item[1])
+    server.sendto(b'Filename received', addr)
 
-data = 'Enviando uma mensagem '
+    bar = tqdm(range(FILESIZE), f"Receiving {FILENAME}", unit="B", unit_scale=True, unit_divisor=SIZE)
 
-# for i in range (0, 10):
-#     print(data + str(i))
-mean = 0
+    with open(f'recv_{FILENAME}', 'w') as f:
+        while True:
+            data, addr = server.recvfrom(SIZE)
+            
+            if not data or data.decode(FORMAT) == 'F':
+                server.sendto(b"Finish", addr)
+                break
 
-bytesAddressPair = udp_socket.recvfrom(BUFFERSIZE)
-address = bytesAddressPair[1]
+            f.write(data.decode(FORMAT))
+            server.sendto(b"Data received", addr)
+            bar.update(len(data))
 
-for i in range (0, 10):
-    # data = conn.recv(1024) # 1024 bytes serao recebidos na conexao 
-    begin = time.perf_counter_ns()
-    
-    udp_socket.sendto(str.encode(data + str(i)), address)
-    end = time.perf_counter_ns()
-    print('Duração', i, (end-begin), 'ns')
-    mean += (end-begin)
-# conn.send(str.encode(data + str(1)))
-# conn.send(str.encode(data + str(2)))
+    server.close()
 
-print('Media:', mean/10, 'ns')
+if __name__ == '__main__':
+    main()
