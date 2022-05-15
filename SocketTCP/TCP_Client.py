@@ -1,15 +1,42 @@
-import socket
+import socket, os, time
+from tqdm import tqdm
 
-HOST = 'localhost'
-PORT = 50000
+# IP = socket.gethostbyname(socket.gethostname())
+IP = '192.168.202.4'
+PORT = 44550
+ADDR = (IP, PORT)
+SIZE = 256
+FORMAT = 'utf-8'
+FILENAME = 'data.txt'
+FILESIZE = os.path.getsize(FILENAME)
 
-# cria socket TCP
-tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-tcp_socket.connect((HOST, PORT))
+def main():
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect(ADDR)
+    
+    data = f"{FILENAME}_{FILESIZE}"
+    client.send(data.encode(FORMAT))
+    msg = client.recv(SIZE).decode(FORMAT)
+    print(f"SERVER: {msg}")
 
-for i in range (0, 10):
-    tcp_socket.sendall(str.encode(' '))
-    data = tcp_socket.recv(1024)
-    print(data.decode())
-    if not data:
-        pass
+    bar = tqdm(range(FILESIZE), f"Sending {FILENAME}", unit="B", unit_scale=True, unit_divisor=SIZE)
+
+    with open(FILENAME, 'r') as f:
+        while True:
+            data = f.read(SIZE)
+
+            if not data:
+                break
+
+            client.send(data.encode(FORMAT))
+            msg = client.recv(SIZE).decode(FORMAT)
+
+            bar.update(len(data))
+
+    client.close()
+
+if __name__ == "__main__":
+    begin = time.perf_counter_ns()
+    main()
+    end = time.perf_counter_ns()
+    print("Execution time:", (end-begin), 'ns')

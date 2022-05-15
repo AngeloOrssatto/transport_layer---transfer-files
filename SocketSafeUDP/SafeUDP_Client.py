@@ -5,10 +5,12 @@ from tqdm import tqdm
 IP = '192.168.202.4'
 PORT = 4455
 ADDR = (IP, PORT)
-SIZE = 256
+SIZE = 2048
 FORMAT = 'utf-8'
 FILENAME = 'data.txt'
 FILESIZE = os.path.getsize(FILENAME)
+ACK = 'ack'
+NACK = 'nack'
 
 def main():
     # cria socket UDP
@@ -16,25 +18,36 @@ def main():
     client.connect(ADDR)
     # client.settimeout(10.0)
 
-    data = f"{FILENAME}_{FILESIZE}"
+    PACK_NUM = int(FILESIZE / SIZE) + 1 
+    print(f"{PACK_NUM} Packages for this file")
+    data = f"{FILENAME}_{FILESIZE}"#_{PACK_NUM}"
     client.send(data.encode(FORMAT))
     msg, addr = client.recvfrom(SIZE)
     print(f"SERVER: {msg.decode(FORMAT)}")
+    
 
     bar = tqdm(range(FILESIZE), f"Sending {FILENAME}", unit="B", unit_scale=True, unit_divisor=SIZE)
 
     with open(FILENAME, 'r') as f:
+        # send/recv first ack
+        client.send(ACK.encode(FORMAT))
+        msg, addr = client.recvfrom(SIZE)
+
+        # for i in range(PACK_NUM):
         while True:
             data = f.read(SIZE)
 
-            if not data:
-                client.send('F'.encode(FORMAT))
+            if not data:        
+                client.send('Finish'.encode(FORMAT))
                 msg = client.recvfrom(SIZE)
                 break
 
             client.send(data.encode(FORMAT))
-            msg = client.recvfrom(SIZE)
-
+            msg, addr = client.recvfrom(SIZE)
+            while msg == NACK:
+                client.send(data.encode(FORMAT))
+                msg = client.recvfrom(SIZE)
+            
             bar.update(len(data))
 
     client.close()

@@ -1,36 +1,46 @@
 import socket
-import time
+from tqdm import tqdm
 
-HOST = 'localhost'
-PORT = 50000
+# IP = socket.gethostbyname(socket.gethostname())
+IP = '192.168.202.4'
+PORT = 44550
+ADDR = (IP, PORT)
+SIZE = 256
+FORMAT = 'utf-8'
 
-# cria socket TCP
-tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-tcp_socket.bind((HOST, PORT))
+def main():
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind(ADDR)
+    server.listen()
+    print("[+] Listening...")
 
-# inicia escuta para conexoes
-tcp_socket.listen()
-print('Aguardando conexão')
+    conn, addr = server.accept()
+    print(f"[+] Client connected from {addr[0]}:{addr[1]}")
 
-conn, addr = tcp_socket.accept()
-print('Conectado em', addr)
+    data = conn.recv(SIZE).decode(FORMAT)
+    item = data.split("_")
+    FILENAME = item[0]
+    FILESIZE = int(item[1])
 
-data = 'Enviando uma mensagem '
+    print("[+] Filename and filesize received from the client.")
+    conn.send("Filename and filesize received".encode(FORMAT))
 
-# for i in range (0, 10):
-#     print(data + str(i))
-mean = 0
+    bar = tqdm(range(FILESIZE), f"Receiving {FILENAME}", unit="B", unit_scale=True, unit_divisor=SIZE)
 
-for i in range (0, 10):
-    # data = conn.recv(1024) # 1024 bytes serao recebidos na conexao 
-    begin = time.perf_counter_ns()
-    h = conn.recv(1024)
-    conn.sendall(str.encode(data + str(i)))
-    end = time.perf_counter_ns()
-    print('Duração', i, (end-begin), 'ns')
-    mean += (end-begin)
-# conn.send(str.encode(data + str(1)))
-# conn.send(str.encode(data + str(2)))
+    with open(f'recv_{FILENAME}', 'w') as f:
+        while True:
+            data = conn.recv(SIZE).decode(FORMAT)
 
-print('Media:', mean/10, 'ns')
-conn.close()
+            if not data:
+                break
+
+            f.write(data)
+            conn.send("Data received".encode(FORMAT))
+
+            bar.update(len(data))
+    
+    conn.close()
+    server.close()
+
+if __name__ == "__main__":
+    main()

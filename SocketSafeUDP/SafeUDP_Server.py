@@ -5,9 +5,10 @@ from tqdm import tqdm
 IP = '192.168.202.4'
 PORT = 4455
 ADDR = (IP, PORT)
-SIZE = 256
+SIZE = 2048
 FORMAT = 'utf-8'
-
+ACK = 'ack'
+NACK = 'nack'
 def main():
 
     # cria socket UDP
@@ -22,22 +23,32 @@ def main():
     item = prev.split("_")
     FILENAME = item[0]
     FILESIZE = int(item[1])
+    # PACK_NUM = int(item[2])
     server.sendto(b'Filename received', addr)
-
+    # print(f"{PACK_NUM} Packages for this file")
+    
+    
     bar = tqdm(range(FILESIZE), f"Receiving {FILENAME}", unit="B", unit_scale=True, unit_divisor=SIZE)
 
     with open(f'recv_{FILENAME}', 'w') as f:
+        # send/recv first ack
+        msg, addr = server.recvfrom(SIZE)
+        server.sendto(ACK.encode(FORMAT), addr)
+        # for i in range (PACK_NUM):
         while True:
             data, addr = server.recvfrom(SIZE)
             
-            if not data or data.decode(FORMAT) == 'F':
+            
+            if data.decode(FORMAT) == 'Finish':
                 server.sendto(b"Finish", addr)
                 break
+            if not data:
+                server.sendto(NACK.encode(FORMAT), addr)
 
             f.write(data.decode(FORMAT))
-            server.sendto(b"Data received", addr)
+            server.sendto(ACK.encode(FORMAT), addr)
             bar.update(len(data))
-
+            
     server.close()
 
 if __name__ == '__main__':
