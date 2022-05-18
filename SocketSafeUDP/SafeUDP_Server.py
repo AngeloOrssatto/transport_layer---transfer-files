@@ -5,17 +5,18 @@ from tqdm import tqdm
 IP = '192.168.202.4'
 PORT = 4455
 ADDR = (IP, PORT)
-SIZE = 2048
+SIZE = 1000
 FORMAT = 'utf-8'
 ACK = 'ack'
 NACK = 'nack'
-BLOCKS = 0
+
 
 def main():
+    BLOCKS = 0
     # cria socket UDP
     server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server.bind(ADDR)
-    # server.settimeout(4.0)
+    server.settimeout(4.0)
     print('[+] Waiting connection...')
 
     data, addr = server.recvfrom(SIZE)
@@ -52,7 +53,8 @@ def main():
             bar.update(len(data))
             
     server.close()
+    print(f"No Blocks received: {BLOCKS}")
 
 if __name__ == '__main__':
     main()
-    print(f"No Blocks received: {BLOCKS}")
+    

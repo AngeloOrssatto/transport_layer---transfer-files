@@ -2,16 +2,17 @@ import socket, os, time
 from tqdm import tqdm
 
 # IP = socket.gethostbyname(socket.gethostname())
-IP = '192.168.202.157'
+IP = '192.168.202.4'
 PORT = 44550
 ADDR = (IP, PORT)
-SIZE = 100
+SIZE = 1000
 FORMAT = 'utf-8'
-FILENAME = 'data2.txt'
+FILENAME = 'data.txt'
 FILESIZE = os.path.getsize(FILENAME)
-BLOCKS = 0
+
 
 def main():
+    BLOCKS = 0
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect(ADDR)
     
@@ -36,6 +37,7 @@ def main():
             bar.update(len(data))
 
     client.close()
+    print(f"No Blocks sended: {BLOCKS}")
 
 if __name__ == "__main__":
     begin = time.perf_counter_ns()

@@ -5,11 +5,11 @@ from tqdm import tqdm
 IP = '192.168.202.4'
 PORT = 4455
 ADDR = (IP, PORT)
-SIZE = 256
+SIZE = 1000
 FORMAT = 'utf-8'
-BLOCKS = 0
 
 def main():
+    BLOCKS = 0
 
     # cria socket UDP
     server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -41,7 +41,8 @@ def main():
             bar.update(len(data))
 
     server.close()
+    print(f"No Blocks received: {BLOCKS}")
 
 if __name__ == '__main__':
     main()
-    print(f"No Blocks received: {BLOCKS}")
+    
