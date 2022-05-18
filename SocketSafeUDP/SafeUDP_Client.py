@@ -2,7 +2,7 @@ import socket, os, time
 from tqdm import tqdm
 
 # IP = socket.gethostbyname(socket.gethostname())
-IP = '192.168.202.4'
+IP = '192.168.202.157'
 PORT = 4455
 ADDR = (IP, PORT)
 SIZE = 2048
@@ -11,12 +11,13 @@ FILENAME = 'data.txt'
 FILESIZE = os.path.getsize(FILENAME)
 ACK = 'ack'
 NACK = 'nack'
+BLOCKS = 0
 
 def main():
     # cria socket UDP
     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client.connect(ADDR)
-    # client.settimeout(10.0)
+    client.settimeout(10.0)
 
     PACK_NUM = int(FILESIZE / SIZE) + 1 
     print(f"{PACK_NUM} Packages for this file")
@@ -43,6 +44,7 @@ def main():
                 break
 
             client.send(data.encode(FORMAT))
+            BLOCKS = BLOCKS + 1
             msg, addr = client.recvfrom(SIZE)
             while msg == NACK:
                 client.send(data.encode(FORMAT))

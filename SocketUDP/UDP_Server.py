@@ -7,13 +7,14 @@ PORT = 4455
 ADDR = (IP, PORT)
 SIZE = 256
 FORMAT = 'utf-8'
+BLOCKS = 0
 
 def main():
 
     # cria socket UDP
     server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server.bind(ADDR)
-    # server.settimeout(4.0)
+    server.settimeout(4.0)
     print('[+] Waiting connection...')
 
     data, addr = server.recvfrom(SIZE)
@@ -36,9 +37,11 @@ def main():
 
             f.write(data.decode(FORMAT))
             server.sendto(b"Data received", addr)
+            BLOCKS = BLOCKS + 1
             bar.update(len(data))
 
     server.close()
 
 if __name__ == '__main__':
     main()
+    print(f"No Blocks received: {BLOCKS}")

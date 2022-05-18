@@ -9,8 +9,9 @@ SIZE = 2048
 FORMAT = 'utf-8'
 ACK = 'ack'
 NACK = 'nack'
-def main():
+BLOCKS = 0
 
+def main():
     # cria socket UDP
     server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server.bind(ADDR)
@@ -47,9 +48,11 @@ def main():
 
             f.write(data.decode(FORMAT))
             server.sendto(ACK.encode(FORMAT), addr)
+            BLOCKS = BLOCKS + 1
             bar.update(len(data))
             
     server.close()
 
 if __name__ == '__main__':
     main()
+    print(f"No Blocks received: {BLOCKS}")

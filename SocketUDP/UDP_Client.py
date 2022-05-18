@@ -2,19 +2,20 @@ import socket, os, time
 from tqdm import tqdm
 
 # IP = socket.gethostbyname(socket.gethostname())
-IP = '192.168.202.4'
+IP = '192.168.202.157'
 PORT = 4455
 ADDR = (IP, PORT)
-SIZE = 256
+SIZE = 2048
 FORMAT = 'utf-8'
 FILENAME = 'data.txt'
 FILESIZE = os.path.getsize(FILENAME)
+BLOCKS = 0
 
 def main():
     # cria socket UDP
     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client.connect(ADDR)
-    # client.settimeout(10.0)
+    client.settimeout(4.0)
 
     data = f"{FILENAME}_{FILESIZE}"
     client.send(data.encode(FORMAT))
@@ -33,6 +34,7 @@ def main():
                 break
 
             client.send(data.encode(FORMAT))
+            BLOCKS = BLOCKS + 1
             msg = client.recvfrom(SIZE)
 
             bar.update(len(data))
